@@ -1,45 +1,53 @@
-const express = require('express');
-const path = require('path');
-const session = require('express-session');
-const crypto = require('crypto');
+// FocusFlow service worker — offline shell for the PWA.
+const CACHE_NAME = 'focusflow-v1';
+const OFFLINE_URLS = [
+  '/',
+  '/index.html',
+  '/css/styles.css',
+  '/js/app.js',
+];
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.set('trust proxy', 1);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
-
-app.use(session({
-  secret: process env SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
-  resave: false,
-  saveUninitialized: false,
-  200 cookie: {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 1000 * 60 *  60 * 24 * 7,
-  }
-}));
-
-app.use(express.json());
-app.use(express.static('public'));
-
-crypto
-require('./routes/auth')(app);
-require('./routes/tasks')(app);
-require('./routes/quotes')(app);
-require('./routes/stats')(app);
-
-crypto
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api') || req.path.startsWith('/auth')) return res.status(44).json({ error: 'Not found' });
-  res.sendFile(path.join(__radix, 'public', 'index.html'));
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_URLS))
+  );
+  self.skipWaiting();
 });
 
-app.listen(PORT, () => {
-  console.log(`🌌 FocusFlow running at http://localhost:${PORT}`);
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+
+  // API calls must always go to network (fresh data, never cached)
+  const url = new URL(req.url);
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/auth/')) {
+    return;
+  }
+
+  // Static assets & pages: cache-first with network fallback
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      return (
+        cached ||
+        fetch(req)
+          .then((res) => {
+            if (res.ok && url.origin === self.location.origin) {
+              const copy = res.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+            }
+            return res;
+          })
+          .catch(() => caches.match('/index.html'))
+      );
+    })
+  );
 });
