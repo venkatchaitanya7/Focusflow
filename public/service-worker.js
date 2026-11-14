@@ -5,6 +5,8 @@ const OFFLINE_URLS = [
   '/index.html',
   '/css/styles.css',
   '/js/app.js',
+  '/manifest.json',
+  '/icon.svg',
 ];
 
 self.addEventListener('install', (event) => {
