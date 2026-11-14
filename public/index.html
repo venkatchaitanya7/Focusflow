@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusFlow — Plan. Focus. Flow.</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- animated background -->
+  <div class="bg-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- ============ AUTH SCREEN ============ -->
+  <section id="authScreen" class="auth-screen hidden">
+    <div class="auth-card glass">
+      <div class="logo">🌊 <span>Focus<span class="grad">Flow</span></span></div>
+      <p class="tagline">Plan. Focus. Flow.</p>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="login">Login</button>
+        <button class="tab" data-tab="register">Sign Up</button>
+      </div>
+
+      <form id="loginForm" class="auth-form">
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit" class="btn-primary">Enter the Flow</button>
+        <p class="form-error" id="loginError"></p>
+      </form>
+
+      <form id="registerForm" class="auth-form hidden">
+        <input type="text" name="name" placeholder="Your name" />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password (min 6 chars)" required minlength="6" />
+        <button type="submit" class="btn-primary">Create Account</button>
+        <p class="form-error" id="registerError"></p>
+      </form>
+
+      <div class="divider"><span>or</span></div>
+      <a href="/auth/github" class="btn-github">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Continue with GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ APP ============ -->
+  <div id="app" class="app hidden">
+    <header class="topbar glass">
+      <div class="logo small">🌊 <span>Focus<span class="grad">Flow</span></span></div>
+      <div class="user-area">
+        <span id="greeting" class="greeting"></span>
+        <img id="avatar" class="avatar hidden" alt="avatar" />
+        <button id="logoutBtn" class="btn-ghost">Logout</button>
+      </div>
+    </header>
+
+    <main class="layout">
+
+      <!-- LEFT: quote + add task + checklist -->
+      <section class="col-left">
+
+        <!-- Daily Quote -->
+        <div class="card quote-card glass">
+          <div class="card-label">✨ Quote of the Day</div>
+          <blockquote id="dailyQuote">Add your own quotes below — they'll rotate every day automatically.</blockquote>
+          <p id="dailyQuoteAuthor" class="quote-author"></p>
+        </div>
+
+        <!-- Add Task -->
+        <div class="card glass">
+          <div class="card-label">➕ New Task</div>
+          <form id="taskForm" class="task-form">
+            <input type="text" id="taskTitle" placeholder="What do you need to do?" required maxlength="200" />
+            <div class="task-form-row">
+              <input type="text" id="taskSubject" placeholder="Subject (optional)" maxlength="60" />
+              <select id="taskPriority">
+                <option value="high">🔴 High</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="low">🟢 Low</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary full">Add to Checklist</button>
+          </form>
+        </div>
+
+        <!-- Checklist -->
+        <div class="card glass">
+          <div class="card-label">✅ Checklist <span id="taskProgress" class="pill"></span></div>
+          <ul id="taskList" class="task-list"></ul>
+          <p id="emptyTasks" class="empty">No tasks yet — add your first one above 🌱</p>
+        </div>
+
+      </section>
+
+      <!-- RIGHT: stats + graph + quotes -->
+      <section class="col-right">
+
+        <!-- Streaks -->
+        <div class="stats-row">
+          <div class="stat-card glass fire">
+            <div class="stat-value" id="statStreak">0</div>
+            <div class="stat-label">🔥 Streak</div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-value" id="statBest">0</div>
+            <div class="stat-label">🏆 Best</div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-value" id="statToday">0</div>
+            <div class="stat-label">📅 Today</div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">🎯 Total</div>
+          </div>
+        </div>
+
+        <!-- Monthly Graph -->
+        <div class="card glass">
+          <div class="card-label graph-head">
+            📊 Monthly Progress
+            <div class="month-nav">
+              <button id="prevMonth" class="btn-ghost small">◀</button>
+              <span id="monthLabel"></span>
+              <button id="nextMonth" class="btn-ghost small">▶</button>
+            </div>
+          </div>
+          <div id="graph" class="graph"></div>
+        </div>
+
+        <!-- Quote Vault -->
+        <div class="card glass">
+          <div class="card-label">💬 My Quote Vault <span id="quoteCount" class="pill"></span></div>
+          <form id="quoteForm" class="quote-form">
+            <input type="text" id="quoteText" placeholder="Write a quote that motivates you…" required maxlength="300" />
+            <input type="text" id="quoteAuthor" placeholder="Author (optional)" maxlength="80" />
+            <button type="submit" class="btn-primary">Add Quote</button>
+          </form>
+          <ul id="quoteList" class="quote-list"></ul>
+          <p id="emptyQuotes" class="empty">No quotes yet — add as many as you like. One shows up every day automatically.</p>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
